@@ -1,3 +1,4 @@
+import streamlit as st
 import requests
 import math
 import time
@@ -5,6 +6,7 @@ NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 HEADERS = {
     "User-Agent": "WanderLite/1.0"
 }
+@st.cache_data(ttl=86400)
 def get_location_coordinates(location):
     params = {
         "q": location,
@@ -25,10 +27,11 @@ def get_location_coordinates(location):
                     float(results[0]["lat"]),
                     float(results[0]["lon"])
                 )
-        print("Location search error:", response.status_code)
+        print("Location search error:", response.status_code, response.text[:500])
     except requests.RequestException as e:
-        print("Location request failed:", e)
+        print("Location request failed:", repr(e))
     return None, None
+@st.cache_data(ttl=3600)
 def search_places(queries, city=None):
     all_results = []
     for query in queries:
@@ -64,15 +67,6 @@ def search_places(queries, city=None):
                 ]
                 for place in results:
                     all_results.append(place)                    
-                    #display_name = place.get(
-                    #    "display_name",
-                    #    ""
-                    #).lower()
-                    #if any(
-                    #    word in display_name
-                    #    for word in excluded_words
-                    #):
-                    #    continue
             else:
                 print(
                     "Place search error:",
